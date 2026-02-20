@@ -13,27 +13,36 @@ export async function createDebateAction(formData: FormData) {
     }
 
     const title = formData.get("title") as string
-    const youtubeUrl = formData.get("youtubeUrl") as string
+    const youtubeUrl = formData.get("youtubeUrl") as string | null
+    const videoUrl = formData.get("videoUrl") as string | null
 
-    if (!title || !youtubeUrl) {
-        throw new Error("Preencha o título da moção e o link do YouTube.")
+    if (!title) {
+        throw new Error("Preencha o título da moção.")
     }
 
-    // Extrair o ID do YouTube da URL
-    let youtubeId = ""
-    try {
-        const url = new URL(youtubeUrl)
-        if (url.hostname.includes("youtube.com")) {
-            youtubeId = url.searchParams.get("v") || ""
-        } else if (url.hostname.includes("youtu.be")) {
-            youtubeId = url.pathname.slice(1)
+    let finalYoutubeId: string | null = null
+    let finalVideoUrl: string | null = null
+
+    // Caso A: Usou vídeo nativo gravado pela webcam
+    if (videoUrl) {
+        finalVideoUrl = videoUrl
+    }
+    // Caso B: Colou o link do Youtube
+    else if (youtubeUrl) {
+        try {
+            const url = new URL(youtubeUrl)
+            if (url.hostname.includes("youtube.com")) {
+                finalYoutubeId = url.searchParams.get("v") || null
+            } else if (url.hostname.includes("youtu.be")) {
+                finalYoutubeId = url.pathname.slice(1)
+            }
+        } catch (e) {
+            throw new Error("URL do YouTube inválida.")
         }
-    } catch (e) {
-        throw new Error("URL do YouTube inválida.")
     }
 
-    if (!youtubeId) {
-        throw new Error("URL do YouTube inválida.")
+    if (!finalYoutubeId && !finalVideoUrl) {
+        throw new Error("É necessário fornecer a Tese em Vídeo (Link do YouTube ou Gravação).")
     }
 
     let debateId = ""
@@ -53,7 +62,8 @@ export async function createDebateAction(formData: FormData) {
                 user_id: session.user?.id as string,
                 side: "NEUTRO", // A moção inicial não tem lado, é a tese
                 title: "Moção Principal",
-                youtube_id: youtubeId,
+                youtube_id: finalYoutubeId || null,
+                video_url: finalVideoUrl || null,
                 video_duration: 300, // Fake MVP
                 target_start: 0,
                 target_end: 300 // Todo o vídeo

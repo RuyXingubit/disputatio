@@ -16,6 +16,7 @@ model User {
   elo_rating    Int         @default(1200) // Score gamificado Retórico
   debates       Debate[]
   arguments     Argument[]
+  votes         ArgumentVote[]
   fact_checks   FactCheck[]
 }
 
@@ -48,8 +49,9 @@ model Argument {
   
   side            String      // GOVERNO, OPOSICAO, NEUTRO
   
-  // YouTube 
-  youtube_id      String
+  // Fonte do Vídeo (Pode ser Youtube ou Upload Direto pro S3)
+  youtube_id      String?
+  video_url       String?     // URL do Object Storage (Ex: MinIO)
   video_duration  Int         // em segundos
 
   // Lógica do Aparte
@@ -59,7 +61,20 @@ model Argument {
   upvotes         Int         @default(0)
   created_at      DateTime    @default(now())
   
+  votes           ArgumentVote[]
   fact_checks     FactCheck[]
+}
+
+// Tabela de Junção para Upvotes (1 voto por usuário por argumento)
+model ArgumentVote {
+  user_id       String
+  argument_id   String
+  created_at    DateTime  @default(now())
+
+  user          User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  argument      Argument  @relation(fields: [argument_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, argument_id])
 }
 
 // Fontes curadas 

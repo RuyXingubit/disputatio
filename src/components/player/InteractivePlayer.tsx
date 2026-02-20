@@ -15,35 +15,44 @@ interface Aparte {
     target_start: number
     target_end: number
     author: string
-    youtube_id: string
+    youtube_id?: string | null
+    video_url?: string | null
 }
 
 interface InteractivePlayerProps {
-    videoId: string
+    videoId?: string | null
+    videoUrl?: string | null
     apartes: Aparte[]
     debateId: string
     parentId: string
 }
 
-export function InteractivePlayer({ videoId, apartes, debateId, parentId }: InteractivePlayerProps) {
+export function InteractivePlayer({ videoId, videoUrl, apartes, debateId, parentId }: InteractivePlayerProps) {
     const { setCurrentTime, setIsPlaying, setDuration, currentTime, isPlaying } = usePlayerStore()
     const playerRef = useRef<any>(null)
+    const videoTagRef = useRef<HTMLVideoElement>(null)
     const router = useRouter()
+
     const [isLoginModalOpen, setLoginModalOpen] = useState(false)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [modalTargetStart, setModalTargetStart] = useState(0)
 
     useEffect(() => {
         let interval: NodeJS.Timeout
-        if (isPlaying && playerRef.current) {
+        if (isPlaying && (playerRef.current || videoTagRef.current)) {
             interval = setInterval(async () => {
-                const time = await playerRef.current.getCurrentTime()
+                // Pega do Ref do Youtube, ou do Ref do HTML5 Video
+                const time = playerRef.current
+                    ? await playerRef.current.getCurrentTime()
+                    : (videoTagRef.current ? videoTagRef.current.currentTime : 0)
+
                 setCurrentTime(time)
             }, 500)
         }
         return () => clearInterval(interval)
     }, [isPlaying, setCurrentTime])
 
+    // --- YT Event Handlers ---
     const onReady: YouTubeProps['onReady'] = (event) => {
         playerRef.current = event.target
         setDuration(event.target.getDuration())
@@ -53,28 +62,55 @@ export function InteractivePlayer({ videoId, apartes, debateId, parentId }: Inte
         setIsPlaying(event.data === 1)
     }
 
+    // --- HTML Player Handlers ---
+    const onHTML5Play = () => setIsPlaying(true)
+    const onHTML5Pause = () => setIsPlaying(false)
+    const onHTML5LoadedMetadata = (e: any) => setDuration(e.target.duration)
+
+    const handlePauseBoth = () => {
+        playerRef.current?.pauseVideo()
+        videoTagRef.current?.pause()
+    }
+
+
     const activeApartes = apartes.filter(
         (a) => currentTime >= a.target_start && currentTime <= a.target_end
     )
 
     return (
-        <div className="relative w-full max-w-4xl mx-auto rounded-lg overflow-hidden bg-black aspect-video group shadow-xl">
-            <YouTube
-                videoId={videoId}
-                opts={{
-                    width: '100%',
-                    height: '100%',
-                    playerVars: {
-                        autoplay: 1, // Auto-play ativado para transição fluida
-                        modestbranding: 1,
-                        rel: 0,
-                    },
-                }}
-                onReady={onReady}
-                onStateChange={onStateChange}
-                className="absolute inset-0 w-full h-full pointer-events-auto"
-                iframeClassName="w-full h-full"
-            />
+        <div className="relative w-full max-w-4xl mx-auto rounded-lg overflow-hidden bg-black aspect-video group shadow-xl border border-zinc-800">
+
+            {videoId && (
+                <YouTube
+                    videoId={videoId}
+                    opts={{
+                        width: '100%',
+                        height: '100%',
+                        playerVars: {
+                            autoplay: 1, // Auto-play ativado para transição fluida
+                            modestbranding: 1,
+                            rel: 0,
+                        },
+                    }}
+                    onReady={onReady}
+                    onStateChange={onStateChange}
+                    className="absolute inset-0 w-full h-full pointer-events-auto"
+                    iframeClassName="w-full h-full"
+                />
+            )}
+
+            {videoUrl && !videoId && (
+                <video
+                    ref={videoTagRef}
+                    src={videoUrl}
+                    controls
+                    autoPlay
+                    onPlay={onHTML5Play}
+                    onPause={onHTML5Pause}
+                    onLoadedMetadata={onHTML5LoadedMetadata}
+                    className="absolute inset-0 w-full h-full object-contain pointer-events-auto bg-black"
+                />
+            )}
 
             <AnimatePresence>
                 {activeApartes.length > 0 && (
@@ -106,7 +142,7 @@ export function InteractivePlayer({ videoId, apartes, debateId, parentId }: Inte
                                     variant="secondary"
                                     className="w-full text-xs h-8 bg-white text-black hover:bg-zinc-200"
                                     onClick={() => {
-                                        playerRef.current?.pauseVideo()
+                                        handlePauseBoth()
                                         // Navega para a mesma página, mas com o foco no novo argumento
                                         router.push(`/debate/${debateId}?argId=${aparte.id}`)
                                     }}
@@ -126,7 +162,7 @@ export function InteractivePlayer({ videoId, apartes, debateId, parentId }: Inte
                     size="sm"
                     className="bg-red-600 hover:bg-red-700 font-semibold shadow-lg"
                     onClick={() => {
-                        playerRef.current?.pauseVideo()
+                        handlePauseBoth()
                         setModalTargetStart(Math.floor(currentTime))
                         setIsModalOpen(true)
                     }}

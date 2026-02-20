@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: disputatio-minio
+    restart: always
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-disputatio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-disputatio_s3_secret}
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - minio_network
+
+  minio-setup:
+    image: minio/mc:latest
+    container_name: disputatio-minio-setup
+    depends_on:
+      - minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-disputatio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-disputatio_s3_secret}
+    entrypoint: >
+      /bin/sh -c " echo 'Aguardando MinIO iniciar...'; sleep 5; /usr/bin/mc alias set myminio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}; /usr/bin/mc mb myminio/disputatio-videos --ignore-existing; /usr/bin/mc anonymous set download myminio/disputatio-videos; echo 'Bucket disputatio-videos configurado com sucesso com acesso público de leitura.'; exit 0; "
+    networks:
+      - minio_network
+
+volumes:
+  minio_data:
+    name: minio_data
+
+networks:
+  minio_network:
+    name: minio_network
+    driver: bridge

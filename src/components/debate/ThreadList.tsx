@@ -1,12 +1,16 @@
 import { MessageSquareShare } from "lucide-react"
 import Link from "next/link"
+import { UpvoteButton } from "./UpvoteButton"
 
 interface ArgumentNode {
     id: string
     title: string
     side: string
     created_at: Date
+    upvotes: number
+    hasVotedIni: boolean
     user: {
+        id: string
         name: string | null
     }
     _count: {
@@ -17,6 +21,7 @@ interface ArgumentNode {
 interface ThreadListProps {
     debateId: string
     apartes: ArgumentNode[]
+    currentUserId: string | null
 }
 
 function SideBadge({ side }: { side: string }) {
@@ -29,7 +34,7 @@ function SideBadge({ side }: { side: string }) {
     return <span className="inline-flex items-center rounded-sm bg-zinc-500/10 px-2 py-0.5 text-[10px] font-medium text-zinc-400 border border-zinc-500/20">Neutro</span>
 }
 
-export function ThreadList({ debateId, apartes }: ThreadListProps) {
+export function ThreadList({ debateId, apartes, currentUserId }: ThreadListProps) {
     if (!apartes || apartes.length === 0) {
         return (
             <div className="mt-8 pt-8 border-t border-zinc-900 text-center">
@@ -68,9 +73,20 @@ export function ThreadList({ debateId, apartes }: ThreadListProps) {
                             </p>
 
                             <div className="flex items-center gap-4">
+
+                                {currentUserId && (
+                                    <UpvoteButton
+                                        argumentId={aparte.id}
+                                        debateId={debateId}
+                                        initialUpvotes={aparte.upvotes}
+                                        hasVotedIni={aparte.hasVotedIni}
+                                        isAuthor={aparte.user.id === currentUserId}
+                                    />
+                                )}
+
                                 <Link
                                     href={`/debate/${debateId}?argId=${aparte.id}`}
-                                    className="text-xs font-medium text-zinc-400 hover:text-red-400 transition-colors flex items-center gap-1.5"
+                                    className="text-xs font-medium text-zinc-400 hover:text-red-400 transition-colors flex items-center gap-1.5 ml-auto"
                                 >
                                     <MessageSquareShare className="w-3.5 h-3.5" />
                                     Assistir & Ver Respostas ({aparte._count?.replies || 0})
