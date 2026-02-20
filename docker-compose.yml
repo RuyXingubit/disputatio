@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  disputatio-db:
+    image: postgres:15-alpine
+    container_name: disputatio-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: disputatio_admin
+      POSTGRES_PASSWORD: disputatio_password_dev_123 # Alterar em produção
+      POSTGRES_DB: disputatio_db
+    ports:
+      - "5433:5432" # Mapeado para a porta 5433 no host para não conflitar com bancos nativos existente
+    volumes:
+      - disputatio_postgres_data:/var/lib/postgresql/data
+    networks:
+      - disputatio_network
+
+volumes:
+  disputatio_postgres_data:
+    name: disputatio_postgres_data
+
+networks:
+  disputatio_network:
+    name: disputatio_network
+    driver: bridge

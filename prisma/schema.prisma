@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Modelo de Usuário base
+model User {
+  id            String      @id @default(cuid())
+  name          String
+  email         String      @unique
+  password      String
+  elo_rating    Int         @default(1200) // Score gamificado Retórico
+  debates       Debate[]
+  arguments     Argument[]
+  fact_checks   FactCheck[]
+}
+
+// Sala da Discussão, Contexto Global
+model Debate {
+  id            String      @id @default(cuid())
+  title         String
+  description   String?
+  created_at    DateTime    @default(now())
+  is_public     Boolean     @default(true)
+  creator_id    String
+  creator       User        @relation(fields: [creator_id], references: [id])
+  arguments     Argument[]
+}
+
+// Cada "Nó" seja a Moção ou a Réplica é um Argument
+model Argument {
+  id              String      @id @default(cuid())
+  debate_id       String
+  debate          Debate      @relation(fields: [debate_id], references: [id])
+  user_id         String
+  user            User        @relation(fields: [user_id], references: [id])
+  
+  title           String
+
+  // Árvore de Relação (Auto-referência)
+  parent_id       String?     // se for Null, ele é a Moção Raiz
+  parent          Argument?   @relation("ArgumentReplies", fields: [parent_id], references: [id])
+  replies         Argument[]  @relation("ArgumentReplies")
+  
+  side            String      // GOVERNO, OPOSICAO, NEUTRO
+  
+  // YouTube 
+  youtube_id      String
+  video_duration  Int         // em segundos
+
+  // Lógica do Aparte
+  target_start    Int?        // O segundo inicial no vídeo 'parent' no qual isso faz sentido
+  target_end      Int?        // O segundo final referenciado no vídeo 'parent'
+  
+  upvotes         Int         @default(0)
+  created_at      DateTime    @default(now())
+  
+  fact_checks     FactCheck[]
+}
+
+// Fontes curadas 
+model FactCheck {
+  id            String      @id @default(cuid())
+  argument_id   String
+  argument      Argument    @relation(fields: [argument_id], references: [id])
+  user_id       String
+  user          User        @relation(fields: [user_id], references: [id])
+  
+  url           String
+  target_time   Int         // A que segundo do argumento alvo esse fato corrobora
+  claim_type    String      // CONFIRMA, REFUTA, ADICIONA_CONTEXTO
+  votes         Int         @default(0)
+}
