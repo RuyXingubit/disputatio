@@ -1,0 +1,7 @@
+disputatio.com.br {
+    reverse_proxy app:3000
+}
+
+www.disputatio.com.br {
+    redir https://disputatio.com.br{uri} permanent
+}
