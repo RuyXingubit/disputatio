@@ -18,6 +18,9 @@ services:
 
   app:
     image: ${DOCKERHUB_USERNAME:-ruyxingubit}/disputatio:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: disputatio-app
     restart: always
     env_file: .env.prod
