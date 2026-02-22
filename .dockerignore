@@ -1,9 +1,6 @@
 .git
 .gitignore
 .github
-.env
-.env.*
-!.env.example
 node_modules
 npm-debug.log
 .next
@@ -11,3 +8,4 @@ npm-debug.log
 *.md
 docs/
 docker-compose*.yml
+
