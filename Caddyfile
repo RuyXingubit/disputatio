@@ -3,5 +3,5 @@ disputatio.com.br {
 }
 
 www.disputatio.com.br {
-    redir https://disputatio.com.br{uri} permanent
+    redir https://disputatio.com.br{uri}
 }
