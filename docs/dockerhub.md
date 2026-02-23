@@ -59,7 +59,7 @@ O Caddy irá solicitar seu certificado SSL gratuitamente via Let's Encrypt e dir
 
 **4. Execute as migrações iniciais do banco:**
 ```bash
-docker compose -f docker-compose.prod.yml exec app npx prisma migrate deploy
+docker compose -f docker-compose.prod.yml exec app npx prisma@6 migrate deploy
 ```
 
 ---

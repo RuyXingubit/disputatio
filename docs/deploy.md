@@ -84,7 +84,7 @@ O Caddy vai automaticamente:
 Na primeira vez (ou quando houver migrações novas):
 
 ```bash
-docker compose -f docker-compose.prod.yml exec app npx prisma migrate deploy
+docker compose -f docker-compose.prod.yml exec app npx prisma@6 migrate deploy
 ```
 
 ---
