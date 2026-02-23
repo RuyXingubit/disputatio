@@ -30,16 +30,18 @@ A aplicação estará disponível em `http://localhost:3000`.
 Para hospedar o Disputatio na sua própria infraestrutura em produção, recomendamos o uso de nosso Docker Compose de produção, que já inclui proxy e **SSL automático** via Caddy Server.
 
 ### Pré-requisitos
-- Servidor (VM) com Docker e Docker Compose instalados
+- Servidor (VM / VPS) com Docker e Docker Compose instalados
 - Apontamento DNS (ex: `seudominio.com.br`) para o IP deste servidor
-- Uma instância de PostgreSQL (15+) rodando
 
 ### Passo a passo para o Deploy
 
-**1. Clone o repositório no seu servidor:**
+**1. Baixe a infraestrutura base:**
+Crie uma pasta e baixe a configuração mínima necessária:
 ```bash
-git clone https://github.com/RuyXingubit/disputatio.git
-cd disputatio
+mkdir disputatio && cd disputatio
+curl -O https://raw.githubusercontent.com/RuyXingubit/disputatio/main/docker-compose.prod.yml
+curl -O https://raw.githubusercontent.com/RuyXingubit/disputatio/main/Caddyfile
+curl -O https://raw.githubusercontent.com/RuyXingubit/disputatio/main/.env.prod.example
 ```
 
 **2. Configure as variáveis de ambiente:**
