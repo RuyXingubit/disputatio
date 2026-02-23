@@ -17,10 +17,7 @@ services:
       - app
 
   app:
-    image: ${DOCKERHUB_USERNAME:-ruyxingubit}/disputatio:latest
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME:-xingubit}/disputatio:latest
     container_name: disputatio-app
     restart: always
     env_file: .env.prod
@@ -28,6 +25,24 @@ services:
       NODE_ENV: production
     networks:
       - web
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: disputatio-db
+    restart: always
+    env_file: .env.prod
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - web
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-disputatio_user} -d $${POSTGRES_DB:-disputatio_db}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 networks:
   web:
@@ -38,3 +53,5 @@ volumes:
     name: disputatio_caddy_data
   caddy_config:
     name: disputatio_caddy_config
+  postgres_data:
+    name: disputatio_postgres_data

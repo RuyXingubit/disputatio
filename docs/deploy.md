@@ -8,7 +8,6 @@ Guia para subir o Disputatio na VM de produção com HTTPS via Caddy.
 
 - Docker e Docker Compose instalados na VM
 - DNS de `disputatio.com.br` e `www.disputatio.com.br` apontando para o IP da VM
-- Postgres já rodando e acessível (porta 5433)
 - Imagem Docker publicada no Docker Hub via CI/CD
 
 ---
@@ -31,15 +30,22 @@ cp .env.prod.example .env.prod
 nano .env.prod
 ```
 
-Preencha os valores reais:
+Preencha os valores reais do banco de dados e chaves:
 
 ```env
-DATABASE_URL="postgresql://disputatio_admin:SENHA@IP:5433/disputatio_db?schema=public"
-AUTH_SECRET="resultado_de_openssl_rand_-hex_32"
+# Banco de Dados (PostgreSQL integrado)
+POSTGRES_USER="disputatio_user"
+POSTGRES_PASSWORD="SUA_SENHA_SEGURA_AQUI"
+POSTGRES_DB="disputatio_db"
+
+# URL do banco referenciando a rede interna do Compose (db:5432)
+DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
+
+AUTH_SECRET="SUA_CHAVE_SECRETA_AQUI_GERADA_COM_OPENSSL"
 AUTH_TRUST_HOST=true
 AUTH_URL="https://disputatio.com.br"
 GATEWAY_URL="https://video.disputatio.com.br"
-DOCKERHUB_USERNAME="seu_usuario"
+DOCKERHUB_USERNAME="xingubit"
 ```
 
 Para gerar o `AUTH_SECRET`:
@@ -110,7 +116,7 @@ docker compose -f docker-compose.prod.yml up -d
 | Problema | Solução |
 |----------|---------|
 | Certificado não gerado | Verifique que as portas 80 e 443 estão abertas no firewall e o DNS aponta pro IP correto |
-| App não conecta no Postgres | Verifique a `DATABASE_URL` no `.env.prod` e se o Postgres aceita conexões do container |
+| App não conecta no Postgres | Verifique as credenciais no `.env.prod` e observe os logs do banco com `docker compose -f docker-compose.prod.yml logs db` |
 | Imagem não encontrada | Verifique o `DOCKERHUB_USERNAME` no `.env.prod` e se o CI/CD rodou com sucesso |
 | `www` não redireciona | O DNS `www.disputatio.com.br` precisa ter um registro A ou CNAME pro IP da VM |
 
@@ -118,23 +124,24 @@ docker compose -f docker-compose.prod.yml up -d
 
 ## Arquitetura em Produção
 
-```
+```text
 Browser
   │
   ▼
-┌─────────────┐     ┌──────────────────┐
-│   Caddy     │────▶│  App (Next.js)   │
-│  :80 :443   │     │  container:3000   │
-│  SSL auto   │     └────────┬─────────┘
+┌─────────────┐     ┌──────────────────────┐
+│   Caddy     │────▶│    App (Next.js)     │
+│  :80 :443   │     │    container:3000    │
+│  SSL auto   │     └────────┬─────────────┘
 └─────────────┘              │
                              ▼
-                  ┌───────────────────┐
-                  │  Postgres (ext.)  │
-                  │  :5433            │
-                  └───────────────────┘
+                    ┌──────────────────────┐
+                    │ Postgres (Integrado) │
+                    │     container:db     │
+                    │        :5432         │
+                    └──────────────────────┘
                              │
-         ┌───────────────────┘
-         ▼
+     ┌───────────────────────┘
+     ▼
 ┌────────────────────┐
 │  Gateway ISP       │  (outra VM)
 │  video.disputatio  │
