@@ -79,12 +79,12 @@ O Caddy vai automaticamente:
 
 ---
 
-## 4. Aplicar migrações do Prisma
+## 4. Estruturar o banco de dados
 
-Na primeira vez (ou quando houver migrações novas):
+Para criar as tabelas no PostgreSQL pela primeira vez (ou sincronizar o Schema):
 
 ```bash
-docker compose -f docker-compose.prod.yml exec app npx prisma@6 migrate deploy
+docker compose -f docker-compose.prod.yml exec app npx prisma@6 db push
 ```
 
 ---
