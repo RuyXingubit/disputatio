@@ -107,14 +107,21 @@ curl -I https://disputatio.com.br
 
 ---
 
-## Atualizando (Deploy contínuo)
+## Atualizando a Aplicação (Upgrades rápidos)
 
-Quando você faz push na `main`, o GitHub Actions faz o build e publica a imagem no Docker Hub. Na VM, basta instruir o Docker a baixar essa nova imagem e reiniciar os contêineres:
+Para manter a aplicação sempre na versão mais recente sem quedas (zero-downtime) após o GitHub Actions publicar uma nova imagem, execute estes 3 passos ágeis na sua VM:
 
 ```bash
 cd disputatio
+
+# 1. Baixe a versão mais recente do código
 docker compose -f docker-compose.prod.yml pull
+
+# 2. Recrie os contêineres que foram atualizados (o Caddy e DB permanecem intactos)
 docker compose -f docker-compose.prod.yml up -d
+
+# 3. Sincronize o banco de dados (crucial sempre que enviar novas tabelas ou colunas)
+docker compose -f docker-compose.prod.yml exec app npx prisma@6 db push --skip-generate
 ```
 
 > **Nota**: Se você alterou configurações no `Caddyfile` ou `docker-compose.prod.yml` no GitHub durante esse ciclo, será necessário rodar o `curl -O ...` novamente antes do `up -d` para atualizar esses arquivos localmente na VM.

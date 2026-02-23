@@ -59,7 +59,20 @@ O Caddy irá solicitar seu certificado SSL gratuitamente via Let's Encrypt e dir
 
 **4. Estruture o banco de dados inicial:**
 ```bash
-docker compose -f docker-compose.prod.yml exec app npx prisma@6 db push
+docker compose -f docker-compose.prod.yml exec app npx prisma@6 db push --skip-generate
+```
+
+---
+
+## 🔄 Atualizações Rápidas e Manutenção
+
+Para baixar a versão mais nova do sistema disponibilizada e aplicá-la sem perder dados:
+
+```bash
+cd disputatio
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml exec app npx prisma@6 db push --skip-generate
 ```
 
 ---
