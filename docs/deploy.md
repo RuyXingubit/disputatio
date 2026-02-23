@@ -12,14 +12,24 @@ Guia para subir o Disputatio na VM de produção com HTTPS via Caddy.
 
 ---
 
-## 1. Clonar o repositório na VM
+## 1. Baixar os arquivos na VM
+
+Como a aplicação já está encapsulada na imagem do Docker Hub, **não é necessário** clonar todo o código-fonte (arquivos `.ts`, `.tsx`, etc) no servidor final. Você precisa apenas dos arquivos de infraestrutura.
+
+Crie uma pasta para o projeto e baixe os arquivos essenciais de configuração:
 
 ```bash
-git clone https://github.com/RuyXingubit/disputatio.git
-cd disputatio
-```
+mkdir disputatio && cd disputatio
 
-> Se já clonou antes, basta `git pull origin main`.
+# 1. Obter a configuração do Compose
+curl -O https://raw.githubusercontent.com/RuyXingubit/disputatio/main/docker-compose.prod.yml
+
+# 2. Obter as regras de roteamento HTTP/SSL
+curl -O https://raw.githubusercontent.com/RuyXingubit/disputatio/main/Caddyfile
+
+# 3. Baixar o template de variáveis de ambiente
+curl -O https://raw.githubusercontent.com/RuyXingubit/disputatio/main/.env.prod.example
+```
 
 ---
 
@@ -99,7 +109,7 @@ curl -I https://disputatio.com.br
 
 ## Atualizando (Deploy contínuo)
 
-Quando você faz push na `main`, o GitHub Actions builda e publica a imagem no Docker Hub. Na VM:
+Quando você faz push na `main`, o GitHub Actions faz o build e publica a imagem no Docker Hub. Na VM, basta instruir o Docker a baixar essa nova imagem e reiniciar os contêineres:
 
 ```bash
 cd disputatio
@@ -107,7 +117,9 @@ docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-> **Dica**: Automatize isso com um webhook ou cron.
+> **Nota**: Se você alterou configurações no `Caddyfile` ou `docker-compose.prod.yml` no GitHub durante esse ciclo, será necessário rodar o `curl -O ...` novamente antes do `up -d` para atualizar esses arquivos localmente na VM.
+
+> **Dica**: Automatize isso com um webhook esportando uma rota no Caddy, usando Watchtower ou agendando um cron job simples.
 
 ---
 
