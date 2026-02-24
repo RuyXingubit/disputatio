@@ -177,7 +177,7 @@ export function VideoRecorder({ onVideoReady, onCancel }: VideoRecorderProps) {
                         )}
 
                         <div className="flex flex-col gap-3 w-full max-w-xs">
-                            <Button onClick={startCamera} className="bg-red-600 hover:bg-red-700 text-white w-full">
+                            <Button type="button" onClick={startCamera} className="bg-red-600 hover:bg-red-700 text-white w-full">
                                 {cameraError ? "Tentar Câmera Novamente" : "Permitir Câmera do Dispositivo"}
                             </Button>
 
@@ -196,6 +196,7 @@ export function VideoRecorder({ onVideoReady, onCancel }: VideoRecorderProps) {
                             />
 
                             <Button
+                                type="button"
                                 variant="outline"
                                 onClick={() => fileInputRef.current?.click()}
                                 className="w-full border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:bg-zinc-800"
@@ -219,11 +220,11 @@ export function VideoRecorder({ onVideoReady, onCancel }: VideoRecorderProps) {
             {stream && !videoPreview && (
                 <div className="flex justify-center gap-4">
                     {!isRecording ? (
-                        <Button onClick={startRecording} size="lg" className="rounded-full w-14 h-14 bg-red-600 hover:bg-red-700 p-0 shadow-[0_0_20px_rgba(220,38,38,0.4)]">
+                        <Button type="button" onClick={startRecording} size="lg" className="rounded-full w-14 h-14 bg-red-600 hover:bg-red-700 p-0 shadow-[0_0_20px_rgba(220,38,38,0.4)]">
                             <span className="w-4 h-4 bg-white rounded-full"></span>
                         </Button>
                     ) : (
-                        <Button onClick={stopRecording} size="lg" className="rounded-full w-14 h-14 bg-zinc-800 hover:bg-zinc-700 p-0 border-2 border-zinc-600">
+                        <Button type="button" onClick={stopRecording} size="lg" className="rounded-full w-14 h-14 bg-zinc-800 hover:bg-zinc-700 p-0 border-2 border-zinc-600">
                             <Square className="w-5 h-5 text-red-500 fill-current" />
                         </Button>
                     )}
@@ -233,10 +234,10 @@ export function VideoRecorder({ onVideoReady, onCancel }: VideoRecorderProps) {
             {/* Controles Pós-Gravação (Aprovar/Refazer) */}
             {videoPreview && (
                 <div className="flex gap-3 justify-end mt-2 border-t border-zinc-800 pt-4">
-                    <Button variant="outline" onClick={handleRetake} className="flex-1 w-full border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:bg-zinc-800">
+                    <Button type="button" variant="outline" onClick={handleRetake} className="flex-1 w-full border-zinc-700 bg-transparent text-zinc-300 hover:text-white hover:bg-zinc-800">
                         <RefreshCcw className="w-4 h-4 mr-2" /> Descartar
                     </Button>
-                    <Button onClick={handleSubmit} className="flex-1 w-full bg-red-600 hover:bg-red-700 text-white">
+                    <Button type="button" onClick={handleSubmit} className="flex-1 w-full bg-red-600 hover:bg-red-700 text-white">
                         <UploadCloud className="w-4 h-4 mr-2" /> Enviar p/ Nuvem
                     </Button>
                 </div>
@@ -244,7 +245,7 @@ export function VideoRecorder({ onVideoReady, onCancel }: VideoRecorderProps) {
 
             {/* Footer */}
             <div className="flex justify-end mt-2">
-                {(!videoPreview || stream) && <Button variant="ghost" size="sm" onClick={handleExit} className="text-zinc-500 hover:text-zinc-300">Cancelar e Sair</Button>}
+                {(!videoPreview || stream) && <Button type="button" variant="ghost" size="sm" onClick={handleExit} className="text-zinc-500 hover:text-zinc-300">Cancelar e Sair</Button>}
             </div>
         </div>
     )

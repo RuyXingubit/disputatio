@@ -22,6 +22,7 @@ export function NewAparteModal({ isOpen, onClose, targetStart, debateId, parentI
     const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null)
 
     async function handleSubmit(formData: FormData) {
+        if (loading) return;
         setLoading(true)
         try {
             // Append dados vitais de Parent/Tempo
@@ -89,7 +90,7 @@ export function NewAparteModal({ isOpen, onClose, targetStart, debateId, parentI
                                 <MonitorPlay className="w-5 h-5 text-red-500" />
                                 Pedir Aparte
                             </h2>
-                            <button onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
+                            <button type="button" onClick={onClose} className="text-zinc-400 hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -98,12 +99,14 @@ export function NewAparteModal({ isOpen, onClose, targetStart, debateId, parentI
                             {/* Botões Toggle de Modo */}
                             <div className="flex bg-zinc-950 p-1 rounded-lg border border-zinc-800">
                                 <button
+                                    type="button"
                                     onClick={() => setUploadType('youtube')}
                                     className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-colors ${uploadType === 'youtube' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
                                 >
                                     <Youtube className="w-4 h-4" /> Importar do YouTube
                                 </button>
                                 <button
+                                    type="button"
                                     onClick={() => setUploadType('record')}
                                     className={`flex-1 flex items-center justify-center gap-2 py-2 text-sm font-medium rounded-md transition-colors ${uploadType === 'record' ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}
                                 >
