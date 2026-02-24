@@ -81,10 +81,13 @@ O Caddy vai automaticamente:
 
 ## 4. Estruturar o banco de dados
 
-Para criar as tabelas no PostgreSQL pela primeira vez (ou sincronizar o Schema):
+**Isso agora é automático!** 🚀
 
+Graças à última atualização no `Dockerfile`, o contêiner roda `npx prisma db push --skip-generate` automaticamente assim que é iniciado, garantindo que suas tabelas e colunas estejam sempre sincronizadas com o código mais recente, sem precisar de comandos manuais.
+
+Se por acaso você precisar forçar alguma alteração manual, o comando seria:
 ```bash
-docker compose -f docker-compose.prod.yml exec app npx prisma@6 db push
+docker compose -f docker-compose.prod.yml exec app sh -c "node_modules/prisma/build/index.js db push --skip-generate"
 ```
 
 ---
@@ -120,8 +123,8 @@ docker compose -f docker-compose.prod.yml pull
 # 2. Recrie os contêineres que foram atualizados (o Caddy e DB permanecem intactos)
 docker compose -f docker-compose.prod.yml up -d
 
-# 3. Sincronize o banco de dados (crucial sempre que enviar novas tabelas ou colunas)
-docker compose -f docker-compose.prod.yml exec app npx prisma@6 db push --skip-generate
+# O banco de dados já será sincronizado automaticamente quando o contêiner subir!
+# Não é mais necessário rodar o `prisma db push` manualmente.
 ```
 
 > **Nota**: Se você alterou configurações no `Caddyfile` ou `docker-compose.prod.yml` no GitHub durante esse ciclo, será necessário rodar o `curl -O ...` novamente antes do `up -d` para atualizar esses arquivos localmente na VM.
