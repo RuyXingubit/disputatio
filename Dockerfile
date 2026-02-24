@@ -38,9 +38,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Copia schema Prisma para migrações em runtime
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+
+# Instala o Prisma globalmente para poder rodar as migrações no startup sem depender do node_modules local
+RUN npm install -g prisma@6
 
 USER nextjs
 
@@ -48,4 +48,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "node node_modules/prisma/build/index.js db push --skip-generate && node server.js"]
+CMD ["sh", "-c", "prisma db push --skip-generate && node server.js"]
